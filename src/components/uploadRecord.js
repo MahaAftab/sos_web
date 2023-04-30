@@ -39,37 +39,6 @@ function UploadRecord(props) {
   };
 
   
-  // const handleUploadRecorded = async () => {
-  //   let videoUrl;
-  //   if (video) {
-  //     videoUrl = video;
-  //   } else if (recordedChunks.length > 0) {
-  //     const blob = new Blob(recordedChunks, { type: 'video/mp4' });
-  //     videoUrl = URL.createObjectURL(blob);
-  //   }
-  
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append('file', await fetch(videoUrl).then(res => res.blob()), 'video.mp4');
-  
-  //     const response = await fetch('https://b734-111-68-106-39.ngrok.io/upload', {
-  //       method: 'POST',
-  //       body: formData
-  //     });
-  
-  //     console.log(response);
-  
-  //     navigate('/converted-page', {
-  //       state: {
-  //         videoUrl: videoUrl
-  //       }
-  //     });
-  
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
-
   const handleUploadRecorded = async () => {
     let videoUrl;
     if (video) {
@@ -83,34 +52,12 @@ function UploadRecord(props) {
       const formData = new FormData();
       formData.append('file', await fetch(videoUrl).then(res => res.blob()), 'video.mp4');
   
-      const response = await fetch('https://b734-111-68-106-39.ngrok.io/upload', {
+      const response = await fetch('https://870b-111-68-106-39.ngrok.io/upload', {
         method: 'POST',
         body: formData
       });
   
       console.log(response);
-  
-      const audioResponse = await axios.get({url: 'https://b734-111-68-106-39.ngrok.io/result',
-        method: 'GET',
-        mode: 'no-cors',
-
-        headers: {
-          'Content-Type': 'audio/mp3'
-        }
-      });
-  
-      if (audioResponse.status === 200) {
-        const audioBlob = await audioResponse.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-
-        const audiosUrl = window.URL.createObjectURL(new Blob([response.data]));
-        setAudioURI(audiosUrl);
-
-        console.log(soundData);
-        console.log(audioUrl);
-      } else {
-        throw new Error('Failed to fetch audio data');
-      }
   
       navigate('/converted-page', {
         state: {
@@ -122,7 +69,6 @@ function UploadRecord(props) {
       console.error(error);
     }
   };
-  
   return (
     <div>
       <h1 style={{fontWeight: 700, color: 'rgb(12, 48, 125)', marginTop:20, textAlign:'center'}}>Upload or Record Video</h1>
@@ -199,6 +145,64 @@ function UploadRecord(props) {
 }
 
 export default UploadRecord;
+
+
+
+
+  // const handleUploadRecorded = async () => {
+  //   let videoUrl;
+  //   if (video) {
+  //     videoUrl = video;
+  //   } else if (recordedChunks.length > 0) {
+  //     const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+  //     videoUrl = URL.createObjectURL(blob);
+  //   }
+  
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append('file', await fetch(videoUrl).then(res => res.blob()), 'video.mp4');
+  
+  //     const response = await fetch('https://c66d-111-68-106-39.ngrok.io/upload', {
+  //       method: 'POST',
+  //       body: formData
+  //     });
+  
+  //     console.log(response);
+  
+  //     const audioResponse = await fetch('https://c66d-111-68-106-39.ngrok.io/result',{
+  //       method: 'GET',
+  //       mode: 'no-cors',
+
+  //       headers: {
+  //         'Content-Type': 'audio/mp3'
+  //       }
+  //     });
+  
+  //     if (audioResponse.status === 200) {
+  //       const audioBlob = await audioResponse.blob();
+  //       const audioUrl = URL.createObjectURL(audioBlob);
+
+  //       const audiosUrl = window.URL.createObjectURL(new Blob([response.data]));
+  //   //    setAudioURI(audiosUrl);
+
+  //       // console.log(soundData);
+  //       console.log(audioUrl);
+  //       console.log(audiosUrl);
+  //     } else {
+  //       throw new Error('Failed to fetch audio data');
+  //     }
+  
+  //     navigate('/converted-page', {
+  //       state: {
+  //         videoUrl: videoUrl
+  //       }
+  //     });
+  
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+
 
 //   const handleUploadRecorded = () => {
 //     const blob = new Blob(recordedChunks, { type: 'video/mp4' });

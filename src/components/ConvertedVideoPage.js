@@ -46,10 +46,10 @@ function ConvertedVideoPage() {
       <div style={{height:20}}></div>
       {videoUrl && (
         <VideoPlayer
-          // src={audioUrl}
+          src={audioUrl}
           controls
           name="media"
-          type="audio/mpeg"
+          type="audio/mp3"
         />
       )}
       <p>This is the text from audio</p>

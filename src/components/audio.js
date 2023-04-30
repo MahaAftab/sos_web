@@ -2,50 +2,99 @@ import React, { useState, useEffect } from 'react';
 
 export const VideoPlayer = ({ src, autoplay, controls, name, type }) => {
   const [audioData, setAudioData] = useState(null);
+  const [audio, setAudio] = useState();
 
   useEffect(() => {
-   
-    const fetchAudioData = async () => {
-      try {
-        const response = await fetch('https://b734-111-68-106-39.ngrok.io/result', {
-          method: 'GET',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'audio/mp3'
-          }
-        });
+    const audioUrl = 'https://870b-111-68-106-39.ngrok.io/result';
     
-        if (response.status === 200) {
-          const blob = await response.blob();
-          const url = URL.createObjectURL(blob);
-          console.log(url);
-          console.log(audioData)
-          setAudioData(url);
-        }
-        else {
-          
-          throw new Error('Failed to fetch audio data');
-   
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }; 
-    fetchAudioData();
-  }, []);
+    fetch(audioUrl, { method: 'GET',})
+      .then(response => response.blob())
+      .then(blob => {
+        const audios = new Audio(URL.createObjectURL(blob));
+        setAudio(audios);
+        audios.crossOrigin = 'anonymous';
+        audios.play();
+      })
+      .catch(error => {
+        console.error('Error loading audio', error);
+      });
+  }, []); // Add an empty array as the second argument to only run this effect once
+  
+
 
   return (
     <>
       {audioData && (
-        <audio src={audioData} autoPlay={autoplay} controls name={name} style={{alignItems:'center'}}>
-          <source src={audioData} type={type} />
+        <audio src={audio} autoPlay={autoplay} controls name={name} style={{alignItems:'center'}}>
+          <source src={audio} type={type} />
         </audio>
       )}
-      <video src={audioData} autoPlay={autoplay} controls name={name} type={type} />
+      <audio src={audio} autoPlay={autoplay} controls name={name} type={type} />
     </>
   );
 };
 
+
+  // useEffect(() => {
+   
+  //   const fetchAudioData = async () => {
+  //     try {
+  //       const response = await fetch('https://c66d-111-68-106-39.ngrok.io/result', {
+  //         method: 'GET',
+  //         // mode: 'no-cors',
+  //         headers: {
+  //           'Content-Type': 'audio/mp3'
+  //         }
+  //       });
+    
+  //       if (response.status === 200) {
+  //         const blob = await response.blob();
+  //         const url = URL.createObjectURL(blob);
+  //         console.log(url);
+  //         console.log(audioData)
+  //         setAudioData(url);
+  //       }
+  //       else {
+          
+  //         throw new Error('Failed to fetch audio data');
+   
+  //       }
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }; 
+  //   fetchAudioData();
+  // }, []);
+  // const fetchAudioData = async () => {
+  //   try {
+  //     const response = await fetch('https://c66d-111-68-106-39.ngrok.io/result', {
+  //       method: 'GET',
+  //       mode: 'no-cors',
+  //       headers: {
+  //         'Content-Type': 'audio/mp3'
+  //       }
+  //     });
+  
+  //     if (response.status === 200) {
+  //       const blob = await response.blob();
+  //       const url = URL.createObjectURL(blob);
+  //       localStorage.setItem('audioData', url); // save to local storage
+  //       setAudioData(url); // update state with URL
+  //     } else {
+  //       throw new Error('Failed to fetch audio data');
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+  
+  // useEffect(() => {
+  //   fetchAudioData();
+  // }, []);
+  
+  // const url = localStorage.getItem('audioData');
+  // const audio = new Audio(url);
+  // audio.play();
 
 // import React, { useState, useEffect } from 'react';
 
