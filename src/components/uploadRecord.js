@@ -1,8 +1,10 @@
-import { Button, CircularProgress } from '@mui/material';
-import React, { useState } from 'react';
-import Box from '@mui/material/Box';
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import { Button, CircularProgress } from "@mui/material";
+import React, { useState } from "react";
+import Box from "@mui/material/Box";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 function UploadRecord(props) {
   const [video, setVideo] = useState(null);
@@ -18,13 +20,22 @@ function UploadRecord(props) {
   };
 
   const handleRecord = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-    const recorder = new MediaRecorder(stream);
-    recorder.addEventListener('dataavailable', handleDataAvailable);
-    recorder.start();
-    setMediaRecorder(recorder);
-    setStopButtonClicked(false);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: true,
+      });
+      const recorder = new MediaRecorder(stream);
+      recorder.addEventListener("dataavailable", handleDataAvailable);
+      recorder.start();
+      setMediaRecorder(recorder);
+      setStopButtonClicked(false);
+    } catch (error) {
+      console.error(error);
+      toast.error("Unable to access camera.");
+    }
   };
+  
 
   const handleDataAvailable = (event) => {
     if (event.data.size > 0) {
@@ -39,6 +50,10 @@ function UploadRecord(props) {
     setStopButtonClicked(true);
   };
 
+  const [error, setError] = useState(null);
+
+ 
+
   const handleUploadRecorded = async () => {
     let videoUrl;
     if (video) {
@@ -47,112 +62,178 @@ function UploadRecord(props) {
       const blob = new Blob(recordedChunks, { type: 'video/mp4' });
       videoUrl = URL.createObjectURL(blob);
     }
-
+  
     try {
       setIsUploading(true);
-
+  
       const formData = new FormData();
       formData.append('file', await fetch(videoUrl).then(res => res.blob()), 'video.mp4');
-
+  
+      // Check file size
+      const fileSize = formData.get('file').size;
+      if (fileSize > 20971520) {
+        toast.error('Video size should not exceed 20MB.');
+        setIsUploading(false);
+        return;
+      }
+  
       const response = await fetch(`${window['apiLocation']}/upload`, {
         method: 'POST',
         body: formData
       });
-
+  
+      if (!response.ok) {
+        toast.error('Error uploading video. Please try again later.');
+        throw new Error(response.statusText);
+      }
       console.log(response);
-
+  
       setIsUploading(false);
-
+  
       navigate('/converted-page', {
         state: {
           videoUrl: videoUrl
         }
       });
-
+  
     } catch (error) {
       console.error(error);
+      setIsUploading(false);
+      toast.error('Error uploading video. Please try again later.');
     }
   };
-
+  
   return (
     <div>
-      <h1 style={{fontWeight: 700, color: 'rgb(12, 48, 125)', marginTop:20, textAlign:'center'}}>Upload or Record Video</h1>
-      <Box
-        sx={{
-          height: '65vh',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          bgcolor: 'white',
+       <ToastContainer />
+      <h1
+        style={{
+          fontWeight: 700,
+          color: "rgb(12, 48, 125)",
+          marginTop: 20,
+          textAlign: "center",
         }}
       >
-        <div style={{background: 'rgb(217, 213, 212)', paddingLeft:10,paddingTop:10, paddingBottom:10, paddingRight:0, margin:10,  borderRadius: 20,color:'black',height: '50px',}}>
+        Upload or Record Video
+      </h1>
+      <Box
+        sx={{
+          height: "65vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          bgcolor: "white",
+        }}
+      >
+        <div
+          style={{
+            background: "rgb(217, 213, 212)",
+            paddingLeft: 10,
+            paddingTop: 10,
+            paddingBottom: 10,
+            paddingRight: 0,
+            margin: 10,
+            borderRadius: 20,
+            color: "black",
+            height: "50px",
+          }}
+        >
           <input type="file" accept=".mp4" onChange={handleUpload} />
         </div>
         <br />
-        {!mediaRecorder && 
+        {!mediaRecorder && (
           <Button
             variant="contained"
             onClick={handleRecord}
             startIcon={<FiberManualRecordIcon />}
             sx={{
-              backgroundColor: 'rgb(217, 213, 212)',
-             
-              color: 'black',
-              width: '210px',
-              height: '50px',
-              fontSize: '18px',
+              backgroundColor: "rgb(217, 213, 212)",
+
+              color: "black",
+              width: "210px",
+              height: "50px",
+              fontSize: "18px",
               borderRadius: 5,
-              '&:hover': {
-              backgroundColor: 'rgb(194, 189, 188)',
+              "&:hover": {
+                backgroundColor: "rgb(194, 189, 188)",
               },
-              }}
-              >
-              Record
-              </Button>
-              }
-              {mediaRecorder && !stopButtonClicked &&
-              <Button style={{color:'red'}} onClick={handleStopRecord}>Stop Recording</Button>
-              }
-              <br />
-              {recordedChunks.length > 0 && (
-              <div>
-              <video src={URL.createObjectURL(new Blob(recordedChunks, { type: 'video/mp4' }))} width="400" height="300" controls />
-              </div>
+            }}
+          >
+            Record
+          </Button>
+        )}
+        {mediaRecorder && !stopButtonClicked && (
+          <Button style={{ color: "red" }} onClick={handleStopRecord}>
+            Stop Recording
+          </Button>
+        )}
+        <br />
+        {recordedChunks.length > 0 && (
+          <div>
+            <video
+              src={URL.createObjectURL(
+                new Blob(recordedChunks, { type: "video/mp4" })
               )}
-              {(video || recordedChunks.length > 0) && (
-              <Button
-              sx={{
-              backgroundColor: 'rgb(217, 213, 212)',
-              color: 'black',
-              width: '210px',
-              height: '50px',
-              fontSize: '18px',
+              width="400"
+              height="300"
+              controls
+            />
+          </div>
+        )}
+            {error && <div className="error">{error}</div>}
+
+        {(video || recordedChunks.length > 0) && (
+          <Button
+            sx={{
+              backgroundColor: "rgb(217, 213, 212)",
+              color: "black",
+              width: "210px",
+              height: "50px",
+              fontSize: "18px",
               marginLeft: 10,
               borderRadius: 5,
-              '&:hover': {
-              backgroundColor: 'rgb(194, 189, 188)',
+              "&:hover": {
+                backgroundColor: "rgb(194, 189, 188)",
               },
-              }}
-              variant="contained"
-              disabled={!video && recordedChunks.length === 0}
-              onClick={handleUploadRecorded}
-              
-              >
-              Convert
-              </Button>
-              )}    {stopButtonClicked &&
-                <Button style={{color:'red'}} disabled>Stop Recording</Button>
-              }
-            </Box>
-            {isUploading && <div style={{position: 'absolute', top: '100%', left: '50%', transform: 'translate(-50%, -50%)'}}><CircularProgress /><br></br><span style={{position: 'absolute', top: '140%', left: '50%', transform: 'translate(-51%, -51%)'}}>Processing Video...</span></div>}
-          </div>
-);
+            }}
+            variant="contained"
+            disabled={!video && recordedChunks.length === 0}
+            onClick={handleUploadRecorded}
+          >
+            Convert
+          </Button>
+        )}{" "}
+        {stopButtonClicked && (
+          <Button style={{ color: "red" }} disabled>
+            Stop Recording
+          </Button>
+        )}
+      </Box>
+      {isUploading && (
+        <div
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          <CircularProgress />
+          <br></br>
+          <span
+            style={{
+              position: "absolute",
+              top: "140%",
+              left: "50%",
+              transform: "translate(-51%, -51%)",
+            }}
+          >
+            Processing Video...
+          </span>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default UploadRecord;
-
-
-
-
-          
